@@ -3,10 +3,11 @@ import { Vehiculo } from "./vehiculos/entities/vehiculo.entity";
 import { Auto } from "./vehiculos/entities/auto.entity";
 import { Motocicleta } from "./vehiculos/entities/motocicleta.entity";
 import { Camioneta } from "./vehiculos/entities/camioneta.entity";
+import { BadRequestException } from "@nestjs/common";
 
 export class FactoryVehiculos {
   static crear(dto: CreateVehiculoDto): Vehiculo {
-    switch (dto.tipo) {
+    switch (dto.tipo.toLowerCase()) {
       case 'auto':
         const auto = new Auto();
         Object.assign(auto, dto.datos);
@@ -20,7 +21,7 @@ export class FactoryVehiculos {
         Object.assign(camion, dto.datos);
         return camion;
       default:
-        throw new Error(`Tipo de vehículo no soportado: ${dto.tipo}`);
+        throw new BadRequestException(`Tipo de vehículo no soportado: ${dto.tipo}`);
     }
   }
 }

@@ -1,39 +1,61 @@
-import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches, Max, MaxDate, MaxLength, Min, MinLength, IsIn, ValidateNested } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches, Max, MaxDate, MaxLength, Min, MinLength, IsIn, ValidateNested, Validate, IsEmpty, IsEnum } from "class-validator";
 import { Type } from "class-transformer";
+import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import { TipoMoto } from "../entities/motocicleta.entity";
+import { Clasificacion } from "../entities/vehiculo.entity";
+
+@ValidatorConstraint({ name: 'MaxYear', async: false })
+class MaxYearConstraint implements ValidatorConstraintInterface {
+  validate(year: number, args: ValidationArguments) {
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    return year <= (currentYear + 1);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    // here you can provide default error message if validation failed
+    return 'El año no debe ser mayor al próximo año.';
+  }
+}
 
 class BaseVehiculoDto{
     @IsString()//Valida para evitar ataques SQL
-    @IsNotEmpty()//No valores vacíos
+    @IsNotEmpty({message : "No debe dejar la placa vacía"})//No valores vacíos
     @Matches(/^[A-Z]{3}-\d{4}$/, {message: 'La placa debe tern un formato válido. Ej: ABC-1234'})
     placa!: string;
 
     @IsString()//Valida para evitar ataques SQL
     @IsNotEmpty()//No valores vacíos
-    @MinLength(3, {message : "La marca debe tener al menos 3 caracteres"})
+    @MinLength(2, {message : "La marca debe tener al menos 2 caracteres"})//Existe una marca ds
     @MaxLength(30, {message : "La marca no puede tener más de 30 caracteres"})
-    @Matches(/^[A-zA-Z\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ$]+$/, {message : "La marca solo puede contener letras y espacios"})
+    @Matches(/^[A-zA-Z\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ]+$/, {message : "La marca solo puede contener letras y espacios"})
     marca!: string;
     
     @IsString()//Valida para evitar ataques SQL
     @IsNotEmpty()//No valores vacíos
     @MinLength(3, {message : "El modelo debe tener al menos 3 caracteres"})
     @MaxLength(107, {message : "El modelo no puede tener más de 107 caracteres"})
-    @Matches(/^[A-zA-Z0-9\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ$]+$/, {message : "La marca solo puede contener letras, números y espacios"})
+    @Matches(/^[A-zA-Z0-9\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ]+$/, {message : "La marca solo puede contener letras, números y espacios"})
     modelo!: string;
 
     @IsString()//Valida para evitar ataques SQL
     @IsNotEmpty()//No valores vacíos
-    @MinLength(3, {message : "El modelo debe tener al menos 3 caracteres"})
-    @MaxLength(64, {message : "El modelo no puede tener más de 64 caracteres"})
-    @Matches(/^[A-zA-Z\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ$]+$/, {message : "La marca solo puede contener letras y espacios"})
+    @MinLength(3, {message : "El color debe tener al menos 3 caracteres"})
+    @MaxLength(64, {message : "El color no puede tener más de 64 caracteres"})
+    @Matches(/^[A-zA-Z\s\-áéíóúÁÉÍÓÚñÑäëïöüÄËÏÖÜ]+$/, {message : "El color solo puede contener letras y espacios"})
     color!: string;
 
     @IsNumber()
     @IsInt({message : "El año debe ser un entero"})
     @IsNotEmpty()
-    //@Max() Como colocar que el año maximo sea el proximo del actual
+    @Validate(MaxYearConstraint)
     @Min(1885, {message : "El año no debe ser menor a 1885"})
     anio! : number
+
+    //Validacion de clasificacion
+    @IsNotEmpty()
+    @IsEnum(Clasificacion)
+    clasificacion! : Clasificacion;
 }
 
 class AutoDto extends BaseVehiculoDto{
@@ -47,16 +69,27 @@ class AutoDto extends BaseVehiculoDto{
     @IsNumber()
     @IsNotEmpty()
     @IsInt()
-    @Min(300)
+    @Min(150)
     @Max(800)
     capacidadMaletero! : number;
+
+    //-----Validacion Campos externos -----
+    /*
+    @IsEmpty({message : "Este no es un atributo del auto"})
+    capacidadCarga! : number;
+    */
+
 }
 
 class MotocicletaDto extends BaseVehiculoDto{
     @IsString()//Valida para evitar ataques SQL
     @IsNotEmpty()//No valores vacíos
-    @Matches(/^[A-Z]{3}\d{3}[A-Z]$/, {message: 'La placa debe tern un formato válido. Ej: ABC-123D'})
+    @Matches(/^[A-Z]{3}\d{3}[A-Z]$/, {message: 'La placa debe tern un formato válido. Ej: ABC123D'})
     declare placa: string;
+
+    @IsNotEmpty()
+    @IsEnum(TipoMoto, {message : "La moto debe ser de tipo: 'Deportiva', 'Scooter' o 'Motocross'"})
+    tipoMoto! : TipoMoto;
 }
 
 class CamionetaDto extends BaseVehiculoDto{
@@ -71,13 +104,11 @@ class CamionetaDto extends BaseVehiculoDto{
     @Min(450)
     @Max(1360)
     capacidadCarga! : number;
-
-
 }
 
 
 export class CreateVehiculoDto {
-  @IsIn(['Auto', 'Moto', 'Camioneta'])
+  @IsIn(['Auto', 'Motocicleta', 'Camioneta'])
   tipo!: string;
 
   @ValidateNested()
@@ -85,7 +116,7 @@ export class CreateVehiculoDto {
     const object = opts?.object as CreateVehiculoDto;
     if (!object) return BaseVehiculoDto;
 
-    switch (object.tipo) {
+    switch (object.tipo.toLowerCase()) {
       case 'auto':
         return AutoDto;
       case 'motocicleta':

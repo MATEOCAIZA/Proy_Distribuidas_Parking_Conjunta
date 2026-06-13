@@ -11,7 +11,7 @@ export enum TipoMoto{
 @ChildEntity('Motocicleta')
 export class Motocicleta extends Vehiculo{
     @Column({type : 'enum', enum : TipoMoto})
-    tipo! : TipoMoto; 
+    tipoMoto! : TipoMoto; 
 
 
     obtenerTipo(): string {

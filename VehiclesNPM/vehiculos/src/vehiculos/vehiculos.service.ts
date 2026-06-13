@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
 import { UpdateVehiculoDto } from './dto/update-vehiculo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,7 +21,7 @@ export class VehiculosService {
     });
     if(existe)
     {
-      throw new Error("Ya existe un vehículo con esa placa");
+      throw new ConflictException("Ya existe un vehículo con esa placa");
     }
 
     const vehiculo = FactoryVehiculos.crear(createVehiculoDto);
