@@ -22,8 +22,6 @@ export class UpdateVehiculoPipe implements PipeTransform {
   async transform(value: any, metadata: ArgumentMetadata) {
     if (metadata.type !== 'body') return value; // Solo actúa sobre el body
 
-
-
     // 1. Obtiene el id desde el contexto (se inyecta aparte, ver controlador)
     const id = this.request.params.id;
     if (!id) throw new BadRequestException('Falta el ID del vehículo');
@@ -59,6 +57,15 @@ export abstract class UpdateVehiculoDto extends PartialType(OmitType(BaseVehicul
     //Omite la placa
     @IsEmpty({message : "La placa no se puede modificar"})
     placa! : string;
+
+    @IsEmpty({message : "No se puede cambiar la marca"})
+    declare marca?: string;
+
+    @IsEmpty({message : "No se puede cambiar el modelo"})
+    declare modelo?: string;
+
+    @IsEmpty({ message: "No se puede cambiar el año" })
+    declare anio?: number;
     
 }
 
