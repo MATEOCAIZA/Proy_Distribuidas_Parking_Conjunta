@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { PersonasService } from './personas.service';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
@@ -19,16 +19,16 @@ export class PersonasController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.personasService.findOne(+id);
+    return this.personasService.findOne(id);
+  }
+
+  @Get('dni/:dni')
+  findByDni(@Param('dni') dni: string) {
+    return this.personasService.findByDni(dni);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePersonaDto: UpdatePersonaDto) {
-    return this.personasService.update(+id, updatePersonaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.personasService.remove(+id);
+    return this.personasService.update(id, updatePersonaDto);
   }
 }

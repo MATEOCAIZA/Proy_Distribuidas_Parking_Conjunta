@@ -1,26 +1,143 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  /**
+   * Genera un username único basado en: primera letra del nombre,
+   * primera letra del segundo nombre (si existe), y el apellido completo.
+   * Si el username ya existe, agrega un número incremental al final.
+   * Ejemplo: "mateo sebastian llumigusin" -> "msllumigusin"
+   */
+  async generateUsername(
+    firstName: string,
+    lastName: string,
+    middleName?: string,
+  ): Promise<string> {
+    const normalize = (str: string) =>
+      str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // quitar tildes
+        .replace(/[^a-z0-9]/g, '');     // solo letras y números
+
+    const firstInitial = normalize(firstName).charAt(0);
+    const middleInitial = middleName ? normalize(middleName).charAt(0) : '';
+    const lastNormalized = normalize(lastName);
+
+    const baseUsername = `${firstInitial}${middleInitial}${lastNormalized}`;
+
+    // Verificar si el username base ya existe
+    const existing = await this.userRepository.findOne({
+      where: { username: baseUsername },
+    });
+
+    if (!existing) {
+      return baseUsername;
+    }
+
+    // Si existe, buscar el mayor número sufijo y agregar el siguiente
+    let counter = 1;
+    while (true) {
+      const candidate = `${baseUsername}${counter}`;
+      const found = await this.userRepository.findOne({
+        where: { username: candidate },
+      });
+      if (!found) return candidate;
+      counter++;
+    }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const existing = await this.userRepository.findOne({
+      where: { username: createUserDto.username },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `El username "${createUserDto.username}" ya está en uso`,
+      );
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(
+      createUserDto.password_hash,
+      saltRounds,
+    );
+
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password_hash: hashedPassword,
+    });
+
+    return this.userRepository.save(user);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find({ relations: { persona: true } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: { persona: true },
+    });
+    if (!user) {
+      throw new NotFoundException(`Usuario con id "${id}" no encontrado`);
+    }
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async findByUsername(username: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { username },
+      relations: { persona: true },
+    });
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+
+    // Verificar unicidad del username si se actualiza
+    if (updateUserDto.username && updateUserDto.username !== user.username) {
+      const exists = await this.userRepository.findOne({
+        where: { username: updateUserDto.username },
+      });
+      if (exists) {
+        throw new ConflictException(
+          `El username "${updateUserDto.username}" ya está en uso`,
+        );
+      }
+    }
+
+    if (updateUserDto.password_hash) {
+      const saltRounds = 10;
+      updateUserDto.password_hash = await bcrypt.hash(
+        updateUserDto.password_hash,
+        saltRounds,
+      );
+    }
+
+    Object.assign(user, updateUserDto);
+    return this.userRepository.save(user);
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const user = await this.findOne(id);
+    await this.userRepository.remove(user);
+    return { message: `Usuario con id "${id}" eliminado correctamente` };
   }
 }
