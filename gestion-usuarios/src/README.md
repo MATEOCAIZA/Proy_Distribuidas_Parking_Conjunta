@@ -3,19 +3,25 @@ Es un patrón de comportamiento que está formado por 2 clases, uno o varios obs
 ```mermaid
 classDiagram
     direction BT
-    class RoleDeactivatedEvent{
-        +roleId : String
+    class RolesService{
+        -eventEmitter : EventEmitter2
+        +...()
+        +deactivate(string : id) RoleDeactivatedEvent
+        +...()
     }
 
-    class UserDeactivatedEvent{
-        +userId : String
+    class UsersService{
+        -eventEmitter : EventEmitter2
+        +...()
+        +deactivate(string : id) UserDeactivatedEvent
+        +...()
     }
     class UserRoleDomainListener{
         +onEvent(RoleDeactivatedEvent)
         +onEvent(UserDeactivatedEvent)
     }
 
-    UserRoleDomainListener --> RoleDeactivatedEvent
-    UserRoleDomainListener --> UserDeactivatedEvent
+    UserRoleDomainListener --> RolesService
+    UserRoleDomainListener --> UsersService
 
 ```
