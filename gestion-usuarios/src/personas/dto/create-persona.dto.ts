@@ -65,7 +65,7 @@ export class CreatePersonaDto {
   @IsNotEmpty({ message: 'El teléfono es obligatorio' })
   @MaxLength(17, { message: 'El teléfono no puede tener más de 17 dígitos' })
   @MinLength(5, {message : "El número de teléfono no puede tener menos de 5 dígitos"})
-  @Matches(/^\+?[0-9\s-]+$/, {
+  @Matches(/^\+?[0-9]+$/, {
     message: 'El teléfono solo puede contener números, espacios, + y -',
   })
   phone!: string;

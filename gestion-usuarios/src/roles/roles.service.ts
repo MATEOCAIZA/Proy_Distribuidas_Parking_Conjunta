@@ -21,7 +21,7 @@ export class RolesService {
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     const existing = await this.roleRepository.findOne({
-      where: { name: createRoleDto.name },
+      where: { name: ILike(createRoleDto.name) },
     });
     if (existing) {
       throw new ConflictException(
