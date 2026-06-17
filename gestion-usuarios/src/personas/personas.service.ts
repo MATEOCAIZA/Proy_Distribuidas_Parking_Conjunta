@@ -73,6 +73,7 @@ export class PersonasService {
         nationality: createPersonaDto.nationality,
         phone: createPersonaDto.phone,
       });
+      persona.created_at = new Date();
 
       //Crear y guardar la persona
       const savedPersona = await queryRunner.manager.save(Persona, persona);
@@ -148,6 +149,7 @@ export class PersonasService {
     };
 
     Object.assign(persona, updateData);
+    persona.updated_at = new Date();
     return this.personaRepository.save(persona);
   }
 

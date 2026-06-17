@@ -10,12 +10,16 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Persona } from 'src/personas/entities/persona.entity';
+import { RoleusersService } from 'src/roleusers/roleusers.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserDeactivatedEvent } from './user.events';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private eventEmitter : EventEmitter2
   ) {}
 
   /**
@@ -94,6 +98,7 @@ export class UsersService {
 
     const user = new User();
     Object.assign(user, createUserDto);
+    user.active = true;
     user.created_at = new Date();
     user.password_hash = hashedPassword;
 
@@ -137,6 +142,7 @@ export class UsersService {
       }
     }
 
+    //Condición para actualizar la contraseña
     if (updateUserDto.password_hash) {
       const saltRounds = 10;
       updateUserDto.password_hash = await bcrypt.hash(
@@ -145,7 +151,12 @@ export class UsersService {
       );
     }
 
+    if(updateUserDto.active === false){
+      this.eventEmitter.emit(UserDeactivatedEvent.name, new UserDeactivatedEvent( user.id));
+    }
+
     Object.assign(user, updateUserDto);
+    user.updated_at = new Date();
     return this.userRepository.save(user);
   }
 

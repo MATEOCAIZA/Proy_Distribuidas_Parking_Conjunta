@@ -8,12 +8,15 @@ import { Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoleDeactivatedEvent } from './roles.events';
 
 @Injectable()
 export class RolesService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    private eventEmitter : EventEmitter2
   ) {}
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
@@ -28,9 +31,10 @@ export class RolesService {
 
     const role = this.roleRepository.create({
       name: createRoleDto.name,
-      description: createRoleDto.description,
-      active: createRoleDto.active ?? true,
+      description: createRoleDto.description
     });
+    role.active = true;
+    role.created_at = new Date();
 
     return this.roleRepository.save(role);
   }
@@ -67,8 +71,13 @@ export class RolesService {
         );
       }
     }
+    role.updated_at = new Date();
 
     Object.assign(role, updateRoleDto);
+
+    if(updateRoleDto.active == false){
+      this.eventEmitter.emit(RoleDeactivatedEvent.name, new RoleDeactivatedEvent(role.id));
+    }
     return this.roleRepository.save(role);
   }
 

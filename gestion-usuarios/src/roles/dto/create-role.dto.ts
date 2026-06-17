@@ -9,9 +9,9 @@ import {
 } from 'class-validator';
 
 export class CreateRoleDto {
-  @IsOptional()
-  @IsBoolean()
-  active?: boolean;
+  // @IsOptional()
+  // @IsBoolean()
+  // active?: boolean;
 
   @IsOptional()
   @IsString()

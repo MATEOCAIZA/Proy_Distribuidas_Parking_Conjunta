@@ -12,6 +12,7 @@ import { Persona } from './personas/entities/persona.entity';
 import { User } from './users/entities/user.entity';
 import { Role } from './roles/entities/role.entity';
 import { UserRole } from './roleusers/entities/roleuser.entity';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,7 +34,8 @@ import { UserRole } from './roleusers/entities/roleuser.entity';
       }),
       inject: [ConfigService],
     }),
-    PersonasModule, UsersModule, RolesModule, RoleusersModule
+    PersonasModule, UsersModule, RolesModule, RoleusersModule,
+    EventEmitterModule.forRoot()
   ],
 })
 export class AppModule {}

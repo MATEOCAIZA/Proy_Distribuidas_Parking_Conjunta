@@ -14,8 +14,8 @@ export class CreateRoleuserDto {
   @IsNotEmpty({ message: 'El id de rol es obligatorio' })
   id_role!: string;
 
-  @IsOptional()
-  @IsBoolean({ message: 'active debe ser un valor booleano' })
-  active?: boolean;
+  // @IsOptional()
+  // @IsBoolean({ message: 'active debe ser un valor booleano' })
+  // active?: boolean;
 }
 

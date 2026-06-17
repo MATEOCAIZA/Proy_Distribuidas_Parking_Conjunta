@@ -16,7 +16,7 @@ export class UserRole {
   @CreateDateColumn()
   assigned_at!: Date;
  
-  @UpdateDateColumn()
+  @UpdateDateColumn({nullable : true})
   updated_at!: Date;
  
   @ManyToOne(() => User, (user) => user.userRoles)
