@@ -23,6 +23,13 @@ export class VehiculosController {
     return this.vehiculosService.findOne(id);
   }
 
+  //Endpoint clave para integraciones externas (sistema de tickets, LPR):
+  //consulta por placa, no por UUID interno.
+  @Get('placa/:placa')
+  findByPlaca(@Param('placa') placa: string) {
+    return this.vehiculosService.findByPlaca(placa);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body(UpdateVehiculoPipe) updateVehiculoDto: UpdateVehiculoDto) {
     return this.vehiculosService.update(id, updateVehiculoDto);
@@ -30,6 +37,6 @@ export class VehiculosController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.vehiculosService.remove(+id);
+    return this.vehiculosService.remove(id);
   }
 }

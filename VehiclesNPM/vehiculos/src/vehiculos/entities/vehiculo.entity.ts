@@ -7,6 +7,13 @@ export enum Clasificacion{
     DIESEL = 'Diesel'
 }
 
+//Estado de ocupación dentro del parqueadero. Es la fuente de verdad
+//que consulta el gateway antes de autorizar un ingreso o una salida.
+export enum EstadoVehiculo{
+    FUERA = 'fuera',
+    DENTRO = 'dentro'
+}
+
 @Entity()
 @TableInheritance({column : {type : 'varchar', name : 'tipo'}})
 //Herencia de tablas. Usa como campo diferenciador un campo tipo
@@ -33,6 +40,21 @@ export abstract class Vehiculo {
     @Column({type : 'enum', enum : Clasificacion})
     clasificacion!: Clasificacion
 
+    //--- Campos de soporte para el gateway de tickets ---
+
+    @Column({type : 'enum', enum : EstadoVehiculo, default : EstadoVehiculo.FUERA})
+    estado!: EstadoVehiculo;
+
+    @Column({type : 'timestamp', nullable : true})
+    fechaUltimoIngreso!: Date | null;
+
+    @Column({type : 'timestamp', nullable : true})
+    fechaUltimaSalida!: Date | null;
+
+    //Bloqueo administrativo: vehículo reportado, en mora, vetado, etc.
+    //El gateway debe rechazar el ingreso si activo = false.
+    @Column({default : true})
+    activo!: boolean;
 
     abstract obtenerTipo(): string;
 }
