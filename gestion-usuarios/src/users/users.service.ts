@@ -74,7 +74,7 @@ export class UsersService {
 
       const dto = new CreateUserDto();
       dto.id_person = datosPersona.id;
-      dto.password_hash = datosPersona.dni;// Contraseña inicial = DNI hasheado
+      dto.password = datosPersona.dni;// Contraseña inicial = DNI hasheado
       dto.username = username;
 
       return await this.create(dto);
@@ -92,12 +92,13 @@ export class UsersService {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(
-      createUserDto.password_hash,
+      createUserDto.password,
       saltRounds,
     );
 
     const user = new User();
-    Object.assign(user, createUserDto);
+    user.id_person = createUserDto.id_person;
+    user.username = createUserDto.username;
     user.active = true;
     user.created_at = new Date();
     user.password_hash = hashedPassword;
@@ -127,34 +128,33 @@ export class UsersService {
     });
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  const user = await this.findOne(id);
 
-    // Verificar unicidad del username si se actualiza
-    if (updateUserDto.username && updateUserDto.username !== user.username) {
-      const exists = await this.userRepository.findOne({
-        where: { username: updateUserDto.username },
-      });
-      if (exists) {
-        throw new ConflictException(
-          `El username "${updateUserDto.username}" ya está en uso`,
-        );
-      }
-    }
-
-    //Condición para actualizar la contraseña
-    if (updateUserDto.password_hash) {
-      const saltRounds = 10;
-      updateUserDto.password_hash = await bcrypt.hash(
-        updateUserDto.password_hash,
-        saltRounds,
+  if (updateUserDto.username && updateUserDto.username !== user.username) {
+    const exists = await this.userRepository.findOne({
+      where: { username: updateUserDto.username },
+    });
+    if (exists) {
+      throw new ConflictException(
+        `El username "${updateUserDto.username}" ya está en uso`,
       );
     }
-
-    Object.assign(user, updateUserDto);
-    user.updated_at = new Date();
-    return this.userRepository.save(user);
   }
+
+  let hashedPassword: string | undefined;
+  if (updateUserDto.password) {
+    const saltRounds = 10;
+    hashedPassword = await bcrypt.hash(updateUserDto.password, saltRounds);
+  }
+
+  const { password, ...rest } = updateUserDto;
+  Object.assign(user, rest);
+  if (hashedPassword) user.password_hash = hashedPassword;
+
+  user.updated_at = new Date();
+  return this.userRepository.save(user);
+}
 
    async activate(id : string){
     const user = await this.findOne(id);

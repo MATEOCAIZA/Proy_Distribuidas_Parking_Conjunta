@@ -39,7 +39,7 @@ export class RoleusersService {
     }
 
     const userRole = new UserRole();
-    Object.assign(userRole, createRoleuserDto);
+    userRole.id_user = createRoleuserDto.id_user;
     userRole.id_role = roleExists.id;
     userRole.active = true;
 
@@ -89,7 +89,7 @@ export class RoleusersService {
 
   async deactivate(id_user : string, id_role : string){
     const assignation = await this.findOne(id_user, id_role);
-    assignation.active = true;
+    assignation.active = false;
     return this.userRoleRepository.save(assignation);
   }
 
