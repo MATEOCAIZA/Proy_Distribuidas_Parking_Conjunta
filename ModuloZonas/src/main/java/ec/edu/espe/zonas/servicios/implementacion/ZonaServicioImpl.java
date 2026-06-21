@@ -60,7 +60,7 @@ public class ZonaServicioImpl implements ZonaServicio {
         request.setNombre(sanitizador.limpiarTexto(request.getNombre()));
         request.setDescripcion(sanitizador.escaparHtml(sanitizador.limpiarTexto(request.getDescripcion())));
 
-        if (zonaRepositorio.existsByNombre(request.getNombre())) {
+        if (zonaRepositorio.existsByNombreIgnoreCase(request.getNombre())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe el nombre");
         }
 
