@@ -25,5 +25,5 @@ public class ZonaResponseDTO {
     private TipoZona tipo;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaModificacion;
-    private List<Espacio> espacios;
+    private List<EspacioResponseDTO> espacios;
 }

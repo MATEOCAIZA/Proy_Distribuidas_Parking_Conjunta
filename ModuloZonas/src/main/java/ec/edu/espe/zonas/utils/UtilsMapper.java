@@ -4,7 +4,6 @@ import ec.edu.espe.zonas.datos.dtos.EspacioRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.datos.dtos.ZonaResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.Espacio;
-import ec.edu.espe.zonas.dominio.entidades.TipoEspacio;
 import ec.edu.espe.zonas.dominio.entidades.Zona;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +45,7 @@ public class UtilsMapper {
                 .capacidad(objZona.getCapacidad())
                 .codigo(objZona.getCodigo())
                 .tipo(objZona.getTipo())
-                .espacios(objZona.getEspacios())
+                .espacios(objZona.getEspacios() != null ? objZona.getEspacios().stream().map(this::toEspacioResponseDto).collect(java.util.stream.Collectors.toList()) : null)
                 .estado(objZona.getEstado())
                 .fechaCreacion(objZona.getFechaCreacion())
                 .fechaModificacion(objZona.getFechaModificacion())

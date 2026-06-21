@@ -1,6 +1,5 @@
 package ec.edu.espe.zonas.servicios.implementacion;
 
-import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.datos.dtos.ZonaRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.ZonaResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.Espacio;
@@ -13,7 +12,6 @@ import ec.edu.espe.zonas.servicios.ZonaServicio;
 import ec.edu.espe.zonas.utils.SanitizadorTexto;
 import ec.edu.espe.zonas.utils.UtilsMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
