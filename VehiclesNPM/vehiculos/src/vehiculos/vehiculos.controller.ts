@@ -30,9 +30,22 @@ export class VehiculosController {
     return this.vehiculosService.findByPlaca(placa);
   }
 
+  //Vehículos asociados a una persona (gestion-usuarios), ej. "mis vehículos".
+  @Get('propietario/:idPropietario')
+  findByPropietario(@Param('idPropietario') idPropietario: string) {
+    return this.vehiculosService.findByPropietario(idPropietario);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body(UpdateVehiculoPipe) updateVehiculoDto: UpdateVehiculoDto) {
     return this.vehiculosService.update(id, updateVehiculoDto);
+  }
+
+  //Revierte la baja lógica (DELETE). Opcionalmente reasigna propietario,
+  //ej. el vehículo fue vendido y vuelve a operar con otro dueño.
+  @Patch(':id/reactivar')
+  reactivar(@Param('id') id: string, @Body('idPropietario') idPropietario?: string) {
+    return this.vehiculosService.reactivar(id, idPropietario);
   }
 
   @Delete(':id')

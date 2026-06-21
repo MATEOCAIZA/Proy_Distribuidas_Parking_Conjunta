@@ -43,6 +43,10 @@ services:
         paths:
           - /api/vehiculos
         strip_path: false
+      - name: vehiculos-gateway-route
+        paths:
+          - /api/gateway
+        strip_path: false
 
   - name: gestion-usuarios-service
     url: http://host.docker.internal:3001
