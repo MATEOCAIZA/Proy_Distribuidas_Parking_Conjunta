@@ -22,4 +22,7 @@ public interface EspacioServicio {
     List<EspacioResponseDTO> obtenerEspacioPorEstado(EstadoEspacio estado);
 
     List<EspacioResponseDTO> obtenerEspaciosPorZonaYEstado(UUID idZona, EstadoEspacio estado);
+    List<EspacioResponseDTO> buscarPorTipo(ec.edu.espe.zonas.dominio.entidades.TipoEspacio tipo);
+    List<EspacioResponseDTO> buscarPorTipoYZona(ec.edu.espe.zonas.dominio.entidades.TipoEspacio tipo, UUID idZona);
+    List<EspacioResponseDTO> buscarPorZona(UUID idZona);
 }

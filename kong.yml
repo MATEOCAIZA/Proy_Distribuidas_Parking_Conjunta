@@ -1,0 +1,61 @@
+_format_version: "3.0"
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - HEAD
+        - PUT
+        - PATCH
+        - POST
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - X-Auth-Token
+        - Authorization
+      exposed_headers:
+        - X-Auth-Token
+      credentials: true
+      max_age: 3600
+
+services:
+  - name: zonas-espacios-service
+    url: http://host.docker.internal:8080
+    routes:
+      - name: zonas-espacios-route
+        paths:
+          - /api/zonas
+        strip_path: false
+
+  - name: vehiculos-service
+    url: http://host.docker.internal:3000
+    routes:
+      - name: vehiculos-route
+        paths:
+          - /api/vehiculos
+        strip_path: false
+
+  - name: gestion-usuarios-service
+    url: http://host.docker.internal:3001
+    routes:
+      - name: gestion-usuarios-route
+        paths:
+          - /api/usuarios
+        strip_path: true
+
+  - name: gestion-usuarios-docs-service
+    url: http://host.docker.internal:3001/docs-json
+    routes:
+      - name: gestion-usuarios-docs-route
+        paths:
+          - /docs/usuarios
+        strip_path: true

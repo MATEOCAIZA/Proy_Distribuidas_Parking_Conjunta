@@ -1,8 +1,10 @@
 package ec.edu.espe.zonas.controladores;
 
+import ec.edu.espe.zonas.datos.dtos.BusquedaZonaEstadoDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.EspacioResponseDTO;
 import ec.edu.espe.zonas.dominio.entidades.EstadoEspacio;
+import ec.edu.espe.zonas.dominio.entidades.TipoEspacio;
 import ec.edu.espe.zonas.servicios.EspacioServicio;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,23 +40,45 @@ public class EspacioControlador {
     }
 
     @DeleteMapping("/{idEspacio}")
-    public  ResponseEntity<Void> eliminarEspacio(UUID idEspacio){
+    public  ResponseEntity<Void> eliminarEspacio(@PathVariable UUID idEspacio){
+        servicio.eliminarEspacio(idEspacio);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{idEspacio}")
-    public ResponseEntity<EspacioResponseDTO> actualizarEstado(@PathVariable UUID idEspacio, @Valid @RequestBody EstadoEspacio estado){
-        return ResponseEntity.ok(servicio.actualizarEstado(idEspacio,estado));
+    public ResponseEntity<EspacioResponseDTO> actualizarEstado(@PathVariable UUID idEspacio, @RequestBody EstadoEspacio estado){
+        if (estado == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(servicio.actualizarEstado(idEspacio, estado));
     }
 
     @GetMapping("/estado")
-    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorEstado(@Valid @RequestBody EstadoEspacio estado){
+    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorEstado(@RequestBody EstadoEspacio estado){
+        if (estado == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(servicio.obtenerEspacioPorEstado(estado));
     }
 
     @GetMapping("/zona-estado")
-    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorZonaYEstado(@Valid @RequestBody UUID idZona, @Valid @RequestBody EstadoEspacio estado){
-        return ResponseEntity.ok(servicio.obtenerEspaciosPorZonaYEstado(idZona, estado));
+    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorZonaYEstado(@Valid @RequestBody BusquedaZonaEstadoDTO request){
+        return ResponseEntity.ok(servicio.obtenerEspaciosPorZonaYEstado(request.getIdZona(), request.getEstado()));
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorTipo(@PathVariable TipoEspacio tipo){
+        return ResponseEntity.ok(servicio.buscarPorTipo(tipo));
+    }
+
+    @GetMapping("/zona/{idZona}/tipo/{tipo}")
+    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorTipoYZona(@PathVariable UUID idZona, @PathVariable TipoEspacio tipo){
+        return ResponseEntity.ok(servicio.buscarPorTipoYZona(tipo, idZona));
+    }
+
+    @GetMapping("/zona/{idZona}")
+    public ResponseEntity<List<EspacioResponseDTO>> obtenerEspaciosPorZona(@PathVariable UUID idZona){
+        return ResponseEntity.ok(servicio.buscarPorZona(idZona));
     }
 
 

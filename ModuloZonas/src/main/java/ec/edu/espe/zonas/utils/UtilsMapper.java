@@ -31,7 +31,6 @@ public class UtilsMapper {
         if( requestDto == null) return null;
 
         return Espacio.builder()
-                .codigo(requestDto.getCodigo())
                 .descripcion(requestDto.getDescripcion())
                 .tipo(requestDto.getTipo())
                 .estado(requestDto.getEstado())

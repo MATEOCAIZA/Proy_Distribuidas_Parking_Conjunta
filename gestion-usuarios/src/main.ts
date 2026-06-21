@@ -1,10 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(process.env.PORT ?? 3000);
+
+  const config = new DocumentBuilder()
+    .setTitle('Gestión de Usuarios')
+    .setDescription('API para la gestión de usuarios, personas, roles y asignación de roles del sistema de Parking')
+    .setVersion('1.0')
+    .addServer('/api/usuarios')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

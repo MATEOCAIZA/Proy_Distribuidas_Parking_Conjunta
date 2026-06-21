@@ -1,6 +1,7 @@
 package ec.edu.espe.zonas.controladores;
 import ec.edu.espe.zonas.datos.dtos.ZonaRequestDTO;
 import ec.edu.espe.zonas.datos.dtos.ZonaResponseDTO;
+import ec.edu.espe.zonas.dominio.entidades.TipoZona;
 import ec.edu.espe.zonas.dominio.entidades.Zona;
 import ec.edu.espe.zonas.servicios.ZonaServicio;
 import jakarta.validation.Valid;
@@ -20,11 +21,20 @@ import java.util.UUID;
 public class ZonaControlador {
     private final ZonaServicio servicio;
 
-    //Response Entity maneja por su cuenta los códigos HTTP
     @GetMapping("/")
     public ResponseEntity<List<ZonaResponseDTO>> getZonas()
     {
         return ResponseEntity.ok(servicio.listarZonas());//200 si es exitoso, 500 si falla
+    }
+
+    @GetMapping("/desocupadas")
+    public ResponseEntity<List<ZonaResponseDTO>> getZonasDesocupadas() {
+        return ResponseEntity.ok(servicio.listarZonasDesocupadas());
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<ZonaResponseDTO>> getZonasPorTipo(@PathVariable TipoZona tipo) {
+        return ResponseEntity.ok(servicio.listarZonasPorTipo(tipo));
     }
 
     @PostMapping("/")

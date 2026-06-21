@@ -10,6 +10,7 @@ import ec.edu.espe.zonas.dominio.entidades.Zona;
 import ec.edu.espe.zonas.dominio.repositorios.ZonaRepositorio;
 import ec.edu.espe.zonas.servicios.EspacioServicio;
 import ec.edu.espe.zonas.servicios.ZonaServicio;
+import ec.edu.espe.zonas.utils.SanitizadorTexto;
 import ec.edu.espe.zonas.utils.UtilsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class ZonaServicioImpl implements ZonaServicio {
     private final ZonaRepositorio zonaRepositorio;
     private final EspacioServicio servicioEspacio;
     private final UtilsMapper mapper;
+    private final SanitizadorTexto sanitizador;
 
 
 
@@ -40,7 +42,26 @@ public class ZonaServicioImpl implements ZonaServicio {
     }
 
     @Override
+    public List<ZonaResponseDTO> listarZonasDesocupadas() {
+        return zonaRepositorio.findAll().stream()
+                .filter(z -> z.getEstado() == 1) // Solo activas
+                .filter(z -> z.getEspacios().stream().noneMatch(e -> e.getEstado() == EstadoEspacio.OCUPADO))
+                .map(mapper::toZonaResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ZonaResponseDTO> listarZonasPorTipo(TipoZona tipo) {
+        return zonaRepositorio.findByTipo(tipo).stream()
+                .map(mapper::toZonaResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public ZonaResponseDTO crearZona(ZonaRequestDTO request) {
+        request.setNombre(sanitizador.limpiarTexto(request.getNombre()));
+        request.setDescripcion(sanitizador.escaparHtml(sanitizador.limpiarTexto(request.getDescripcion())));
+
         if (zonaRepositorio.existsByNombre(request.getNombre())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe el nombre");
         }
