@@ -4,7 +4,7 @@ plugins:
   - name: cors
     config:
       origins:
-        - "*"
+        - "http://localhost:8081"
       methods:
         - GET
         - HEAD
@@ -28,6 +28,7 @@ plugins:
       max_age: 3600
 
 services:
+  # Spring Boot corre FUERA de Docker, así que usa host.docker.internal
   - name: zonas-espacios-service
     url: http://host.docker.internal:8080
     routes:
@@ -36,8 +37,9 @@ services:
           - /api/zonas
         strip_path: false
 
+  # Vehículos corre DENTRO de Docker, usamos el nombre del contenedor "vehiculos"
   - name: vehiculos-service
-    url: http://host.docker.internal:3000
+    url: http://vehiculos:3000
     routes:
       - name: vehiculos-route
         paths:
@@ -48,8 +50,17 @@ services:
           - /api/gateway
         strip_path: false
 
+  - name: vehiculos-docs-service
+    url: http://vehiculos:3000/api/vehiculos/docs-json
+    routes:
+      - name: vehiculos-docs-route
+        paths:
+          - /docs/vehiculos
+        strip_path: true
+
+  # Usuarios corre DENTRO de Docker, usamos el nombre "gestion-usuarios"
   - name: gestion-usuarios-service
-    url: http://host.docker.internal:3001
+    url: http://gestion-usuarios:3001
     routes:
       - name: gestion-usuarios-route
         paths:
@@ -57,19 +68,14 @@ services:
         strip_path: true
 
   - name: gestion-usuarios-docs-service
-    url: http://host.docker.internal:3001/docs-json
+    url: http://gestion-usuarios:3001/docs-json
     routes:
       - name: gestion-usuarios-docs-route
         paths:
           - /docs/usuarios
         strip_path: true
 
-
-
 # Consumer autorizado a llamar /api/vehiculos y /api/gateway.
-# La key de ejemplo es solo para desarrollo local: en un ambiente real
-# no se commitea en texto plano (usar variables de entorno / secret
-# manager y generar la credencial vía la Admin API de Kong, no aquí).
 consumers:
   - username: sistema-tickets
     keyauth_credentials:

@@ -32,3 +32,10 @@ spring:
     error:
       include-message: always
       include-binding-errors: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packages-to-scan: ec.edu.espe.zonas.controladores
