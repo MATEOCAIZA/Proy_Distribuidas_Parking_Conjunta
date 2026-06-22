@@ -13,6 +13,8 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { VehiculosService } from '../vehiculos.service';
 import { REQUEST } from '@nestjs/core';
+import { ApiProperty } from 'node_modules/@nestjs/swagger/dist/decorators/api-property.decorator';
+import { ApiExtraModels } from '@nestjs/swagger';
 
 @Injectable()
 export class UpdateVehiculoPipe implements PipeTransform {
@@ -53,24 +55,32 @@ export class UpdateVehiculoPipe implements PipeTransform {
 }
 
 
+
+
 export abstract class UpdateVehiculoDto extends PartialType(OmitType(BaseVehiculoDto, ['placa'] as const)){
     //Omite la placa
+    @ApiProperty()
     @IsEmpty({message : "La placa no se puede modificar"})
     placa! : string;
 
+    @ApiProperty()
     @IsEmpty({message : "No se puede cambiar la marca"})
     declare marca?: string;
 
+    @ApiProperty()
     @IsEmpty({message : "No se puede cambiar el modelo"})
     declare modelo?: string;
 
+    @ApiProperty()
     @IsEmpty({ message: "No se puede cambiar el año" })
     declare anio?: number;
     
 }
 
 //Recicla la estructura pero mantiene la herencia
+
 export class UpdateAutoDto extends UpdateVehiculoDto{
+    @ApiProperty()
     @IsOptional()
     @IsNumber()
     @IsInt()
@@ -78,6 +88,7 @@ export class UpdateAutoDto extends UpdateVehiculoDto{
     @Max(5)
     numeroPuertas! : number;
 
+    @ApiProperty()
     @IsOptional()
     @IsNumber()
     @IsNotEmpty()
@@ -88,17 +99,20 @@ export class UpdateAutoDto extends UpdateVehiculoDto{
 }
 
 export class UpdateMotocicletaDto extends UpdateVehiculoDto{
+    @ApiProperty()
     @IsOptional()
     @IsEnum(TipoMoto, {message : "La moto debe ser de tipo: 'Deportiva', 'Scooter' o 'Motocross'"})
     tipoMoto! : TipoMoto;
 }
 
 export class UpdateCamionetaDto extends UpdateVehiculoDto{
+    @ApiProperty()
     @IsOptional()
     @IsString()
     @Matches(/^(\bsimple\b|\bdoble\b)$/, {message : "La camioneta solo puede ser 'simple' o 'doble'"})
     cabina! : string;
     
+    @ApiProperty()
     @IsOptional()
     @IsNumber()
     @IsInt()
