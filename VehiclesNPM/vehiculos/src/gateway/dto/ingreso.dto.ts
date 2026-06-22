@@ -1,20 +1,21 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class IngresoDto {
+  @ApiProperty({ example: 'ABC-1234', description: 'Placa del vehículo que ingresa' })
   @IsString()
   @IsNotEmpty({ message: 'La placa es obligatoria para registrar el ingreso' })
   placa!: string;
 
-  // Si en el futuro el guardia/cámara identifica una zona específica
-  // (ej. visitante VIP), se puede forzar; si no se manda, el gateway
-  // solo valida que exista cupo del tipo de vehículo correspondiente.
+  @ApiProperty({ example: 'Z1', required: false, description: 'Código de zona específica solicitada (opcional)' })
   @IsOptional()
   @IsString()
   codigoZonaSolicitada?: string;
 
-  // Permite al cliente del gateway decidir si, ante una falla de
-  // comunicación con el servicio de Zonas, se debe bloquear el ingreso
-  // (estricto) o permitirlo en modo degradado (por defecto: false = estricto).
+  @ApiProperty({
+    example: false, required: false,
+    description: 'Si es true, permite el ingreso aunque ModuloZonas no responda (modo degradado). Por defecto false (modo estricto).',
+  })
   @IsOptional()
   @IsBoolean()
   permitirSinValidarCupo?: boolean;

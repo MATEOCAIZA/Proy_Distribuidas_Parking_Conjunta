@@ -26,12 +26,8 @@ import { GatewayModule } from './gateway/gateway.module';
         entities:[Vehiculo, Auto, Motocicleta, Camioneta],
         synchronize: true,
         logging: true,
-        ssl: true,
-      extra: {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      },
+        ssl: false,
+      
       }),
       inject: [ConfigService],
     }),

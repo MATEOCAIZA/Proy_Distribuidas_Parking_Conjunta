@@ -3,10 +3,10 @@ import { VehiculosService } from './vehiculos.service';
 import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
 import { UpdateAutoDto, UpdateCamionetaDto, UpdateMotocicletaDto, UpdateVehiculoDto, UpdateVehiculoPipe } from './dto/update-vehiculo.dto';
 import { UUID } from 'node:crypto';
-import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiConflictResponse, ApiNotFoundResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiConflictResponse, ApiNotFoundResponse, ApiExtraModels, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Vehiculo } from './entities/vehiculo.entity';
 
-
+@ApiTags('vehiculos')
 @Controller('vehiculos')
 export class VehiculosController {
   constructor(private readonly vehiculosService: VehiculosService) { }

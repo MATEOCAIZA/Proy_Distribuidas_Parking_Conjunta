@@ -13,7 +13,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { VehiculosService } from '../vehiculos.service';
 import { REQUEST } from '@nestjs/core';
-import { ApiProperty } from 'node_modules/@nestjs/swagger/dist/decorators/api-property.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 import { ApiExtraModels } from '@nestjs/swagger';
 
 @Injectable()

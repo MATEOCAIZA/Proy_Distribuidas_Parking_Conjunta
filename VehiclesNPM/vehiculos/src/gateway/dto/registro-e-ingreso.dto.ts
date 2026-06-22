@@ -1,23 +1,20 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateVehiculoDto } from '../../vehiculos/dto/create-vehiculo.dto';
 
-// Reutiliza exactamente las mismas validaciones del CRUD de vehículos
-// (placa, formato por tipo, año, etc.) para no duplicar reglas de negocio.
-// Esto asume que en garita se captura el dato completo del vehículo
-// (formulario rápido del guardia, o integración con un sistema externo
-// de matriculación). Si el negocio decide permitir un registro con datos
-// mínimos, eso implica relajar las columnas NOT NULL de la entidad
-// Vehiculo (marca/modelo/color/año) y se debe definir aparte.
 export class RegistroEIngresoDto {
+  @ApiProperty({ type: () => CreateVehiculoDto, description: 'Datos completos del vehículo nuevo a registrar' })
   @ValidateNested()
   @Type(() => CreateVehiculoDto)
   vehiculo!: CreateVehiculoDto;
 
+  @ApiProperty({ example: 'Z1', required: false, description: 'Código de zona específica solicitada (opcional)' })
   @IsOptional()
   @IsString()
   codigoZonaSolicitada?: string;
 
+  @ApiProperty({ example: false, required: false, description: 'Modo degradado si ModuloZonas no responde' })
   @IsOptional()
   @IsBoolean()
   permitirSinValidarCupo?: boolean;

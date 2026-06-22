@@ -1,6 +1,7 @@
-version: '3.8'
-
 services:
+
+  # ─────────────── BASES DE DATOS ───────────────
+
   db-vehiculos:
     image: postgres:16-alpine
     container_name: db-vehiculos
@@ -16,6 +17,42 @@ services:
       timeout: 5s
       retries: 5
 
+  db-usuarios:
+    image: postgres:16-alpine
+    container_name: db-usuarios
+    environment:
+      POSTGRES_USER: usuarios
+      POSTGRES_PASSWORD: usuarios
+      POSTGRES_DB: usuarios
+    volumes:
+      - db-usuarios-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuarios"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-zonas:
+    image: postgres:16-alpine
+    container_name: db-zonas
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: test
+    ports:
+      # Spring Boot (ModuloZonas) corre fuera de Docker y necesita
+      # llegar a esta BD vía localhost. Los demás servicios no la exponen.
+      - "5433:5432"
+    volumes:
+      - db-zonas-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────── MICROSERVICIOS ───────────────
+
   vehiculos:
     build:
       context: ./VehiclesNPM/vehiculos
@@ -27,11 +64,13 @@ services:
       DB_USUARIO: vehiculos
       DB_CONTRASENA: vehiculos
       DB_NOMBRE: vehiculos
+      # gestion-usuarios corre fuera de Docker (o en su propio proceso),
+      # host.docker.internal apunta a la máquina anfitriona desde el contenedor.
       ZONAS_SERVICE_URL: http://host.docker.internal:8080
-      GESTION_USUARIOS_URL: http://host.docker.internal:3001
+      GESTION_USUARIOS_URL: http://gestion-usuarios:3001
     extra_hosts:
-      # host.docker.internal solo se resuelve solo en Docker Desktop
-      # (Mac/Windows). En Linux hace falta este mapeo explícito.
+      # En Linux Docker Engine, host.docker.internal no se resuelve solo.
+      # Este mapeo lo fija explícitamente.
       - "host.docker.internal:host-gateway"
     depends_on:
       db-vehiculos:
@@ -39,11 +78,31 @@ services:
     ports:
       - "3000:3000"
 
+  gestion-usuarios:
+    build:
+      context: ./gestion-usuarios
+    container_name: gestion-usuarios-service
+    environment:
+      PORT: 3001
+      DB_HOST: db-usuarios
+      DB_PORT: 5432
+      DB_USUARIO: usuarios
+      DB_CONTRASENA: usuarios
+      DB_NOMBRE: usuarios
+    depends_on:
+      db-usuarios:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
+  # ─────────────── INFRAESTRUCTURA ───────────────
+
   kong:
     image: kong:latest
     container_name: kong-gateway
     depends_on:
       - vehiculos
+      - gestion-usuarios
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /opt/kong/kong.yml
@@ -53,8 +112,8 @@ services:
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
     ports:
-      - "8000:8000" # Proxy API
-      - "8001:8001" # Admin API
+      - "8000:8000"   # Proxy — único punto de entrada público
+      - "8001:8001"   # Admin API (solo para desarrollo/debug)
     volumes:
       - ./kong.yml:/opt/kong/kong.yml:ro
 
@@ -62,10 +121,16 @@ services:
     image: swaggerapi/swagger-ui
     container_name: swagger-ui
     ports:
-      # Expuesto en el 8081 para no generar conflicto con el puerto 8080 del microservicio Zonas-Espacios (Spring Boot)
       - "8081:8080"
     environment:
-      URLS: '[{ "url": "http://localhost:8000/docs/usuarios", "name": "API Usuarios" }]'
+      # Agrega ambos servicios al selector de Swagger UI
+      URLS: >-
+        [
+          { "url": "http://localhost:3000/api-json", "name": "Vehiculos" },
+          { "url": "http://localhost:8000/docs/usuarios", "name": "Usuarios" }
+        ]
 
 volumes:
   db-vehiculos-data:
+  db-usuarios-data:
+  db-zonas-data:
