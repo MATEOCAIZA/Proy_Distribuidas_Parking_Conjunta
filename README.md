@@ -60,3 +60,5 @@ architecture-beta
  * API Gateway
 
  Problema de separar demasiado los servicios, diferentes IPs, necesita gestionar los firewalls y proxys. 
+
+ Trabajando en codespaces
